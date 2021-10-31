@@ -1,8 +1,8 @@
 package org.kttp.context;
 
-import org.kttp.parser.HttpParser;
-import org.kttp.server.HandlerDispatcher;
-import org.kttp.server.KttpListener;
+import org.kttp.listener.parser.HttpRequestParser;
+import org.kttp.listener.HttpHandlerDispatcher;
+import org.kttp.listener.KttpListener;
 
 public class KttpInitializer {
 
@@ -13,9 +13,9 @@ public class KttpInitializer {
     }
 
     public void start() {
-        var handlers = new HandlerInitializer().init(basePackage);
-        var dispatcher = new HandlerDispatcher(handlers);
-        var server = new KttpListener(new HttpParser(), dispatcher);
+        var handlers = new RestHandlerInitializer().init(basePackage);
+        var dispatcher = new HttpHandlerDispatcher(handlers);
+        var server = new KttpListener(new HttpRequestParser(), dispatcher);
         server.boostrap();
     }
 }

@@ -1,20 +1,19 @@
-package org.kttp.parser;
+package org.kttp.listener.parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.kttp.server.model.HttpHeaders;
-import org.kttp.server.model.HttpMethod;
-import org.kttp.server.model.HttpParam;
-import org.kttp.server.model.HttpRequest;
-import org.kttp.server.model.HttpRequestMeta;
-import org.kttp.server.model.HttpResponse;
+import org.kttp.listener.model.HttpHeaders;
+import org.kttp.listener.model.HttpMethod;
+import org.kttp.listener.model.HttpParam;
+import org.kttp.listener.model.HttpRequest;
+import org.kttp.listener.model.HttpRequestMeta;
+import org.kttp.listener.model.HttpResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//TODO: вынести в абстракцию для смеы протокола
-public class HttpParser {
+public class HttpRequestParser implements RequestParser {
 
     private static final String HEADER_END_TRIGGER = "\r\n\r\n";
     private static final String HEADER_END_TRIGGER_RESPONSE = "\n\n";

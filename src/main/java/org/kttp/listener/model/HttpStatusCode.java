@@ -1,4 +1,4 @@
-package org.kttp.server.model;
+package org.kttp.listener.model;
 
 public enum HttpStatusCode {
     CONTINUE(100, "Continue"),

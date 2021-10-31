@@ -1,4 +1,4 @@
-package org.kttp.server.model.exception;
+package org.kttp.listener.model.exception;
 
 public class InvalidHttpRequestException extends RuntimeException {
     public InvalidHttpRequestException() {

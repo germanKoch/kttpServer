@@ -1,7 +1,7 @@
-package org.kttp.server;
+package org.kttp.listener;
 
 import lombok.RequiredArgsConstructor;
-import org.kttp.parser.HttpParser;
+import org.kttp.listener.parser.RequestParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -18,7 +18,7 @@ public class KttpListener {
 
     private static final int BUFFER_SIZE = 256;
 
-    private final HttpParser parser;
+    private final RequestParser parser;
     private final HandlerDispatcher dispatcher;
 
     public void boostrap() {
