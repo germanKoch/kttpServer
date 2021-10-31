@@ -6,8 +6,8 @@ import org.kttp.listener.model.HttpMethod;
 @Data
 public class RequestMappingInfo {
 
-    private HttpMethod method;
+    private final HttpMethod method;
 
-    private String urlPattern;
+    private final String urlPattern;
 
 }

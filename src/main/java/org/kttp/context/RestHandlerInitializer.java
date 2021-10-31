@@ -3,23 +3,19 @@ package org.kttp.context;
 import org.kttp.context.model.annotations.Controller;
 import org.kttp.context.model.annotations.RequestHandler;
 import org.kttp.context.model.exception.HandlersIntializationException;
-import org.kttp.listener.Handler;
-import org.kttp.listener.model.HttpMethod;
+import org.kttp.listener.HandlerHolder;
 import org.kttp.listener.model.HttpResponse;
+import org.kttp.listener.model.mapping.RequestMappingInfo;
 import org.reflections.Reflections;
 
 import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RestHandlerInitializer implements HandlerInitializer {
 
     @Override
-    public Map<HttpMethod, Map<String, Handler>> init(String basePackage) {
+    public HandlerHolder init(String basePackage, HandlerHolder holder) {
         var reflections = new Reflections(basePackage);
-        var handlersMap = new EnumMap<HttpMethod, Map<String, Handler>>(HttpMethod.class);
         var classes = reflections.getTypesAnnotatedWith(Controller.class);
 
         classes.forEach(aClass -> {
@@ -32,8 +28,7 @@ public class RestHandlerInitializer implements HandlerInitializer {
                     var annotation = handler.getAnnotation(RequestHandler.class);
                     var urlMethod = annotation.method();
                     var url = annotation.url();
-                    var urlMap = handlersMap.computeIfAbsent(urlMethod, meth -> new HashMap<>());
-                    urlMap.put(url, request -> {
+                    holder.add(new RequestMappingInfo(urlMethod, url), request -> {
                         try {
                             return (HttpResponse) handler.invoke(controller, request);
                         } catch (Exception e) {
@@ -45,6 +40,6 @@ public class RestHandlerInitializer implements HandlerInitializer {
                 throw new HandlersIntializationException("Error while handler initialization", e);
             }
         });
-        return handlersMap;
+        return holder;
     }
 }

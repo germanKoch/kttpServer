@@ -1,12 +1,9 @@
 package org.kttp.context;
 
-import org.kttp.listener.Handler;
-import org.kttp.listener.model.HttpMethod;
-
-import java.util.Map;
+import org.kttp.listener.HandlerHolder;
 
 public interface HandlerInitializer {
 
-    Map<HttpMethod, Map<String, Handler>> init(String basePackage);
+    HandlerHolder init(String basePackage, HandlerHolder holdere);
 
 }
