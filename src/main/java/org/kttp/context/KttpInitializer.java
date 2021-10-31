@@ -6,18 +6,24 @@ import org.kttp.listener.KttpListener;
 import org.kttp.listener.parser.HttpRequestParser;
 import org.kttp.listener.resolver.HttpUrlMappingResolver;
 
+import java.util.List;
+
 public class KttpInitializer {
 
     private final String basePackage;
+    private final List<HandlerInitializer> handlerInitializers;
 
     public KttpInitializer(String basePackage) {
         this.basePackage = basePackage;
+        this.handlerInitializers = List.of(
+                new RestHandlerInitializer(),
+                new ResourceHandlerInitializer()
+        );
     }
 
     public void start() {
         var holder = new HttpHandlerHolder();
-        var handlerInitializer = new RestHandlerInitializer();
-        handlerInitializer.init(basePackage, holder);
+        handlerInitializers.forEach(handlerInitializer -> handlerInitializer.init(basePackage, holder));
 
         var resolver = new HttpUrlMappingResolver(holder);
         var dispatcher = new HttpHandlerDispatcher(resolver);
