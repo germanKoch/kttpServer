@@ -1,4 +1,4 @@
-package org.kttp.model;
+package org.kttp.server.model;
 
 import lombok.Data;
 
