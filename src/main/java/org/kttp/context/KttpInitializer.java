@@ -4,7 +4,7 @@ import org.kttp.listener.HttpHandlerDispatcher;
 import org.kttp.listener.HttpHandlerHolder;
 import org.kttp.listener.KttpListener;
 import org.kttp.listener.parser.HttpRequestParser;
-import org.kttp.listener.resolver.HttpUrlNappingResolver;
+import org.kttp.listener.resolver.HttpUrlMappingResolver;
 
 public class KttpInitializer {
 
@@ -16,9 +16,10 @@ public class KttpInitializer {
 
     public void start() {
         var holder = new HttpHandlerHolder();
-        var resolver = new HttpUrlNappingResolver(holder);
         var handlerInitializer = new RestHandlerInitializer();
         handlerInitializer.init(basePackage, holder);
+
+        var resolver = new HttpUrlMappingResolver(holder);
         var dispatcher = new HttpHandlerDispatcher(resolver);
         var server = new KttpListener(new HttpRequestParser(), dispatcher);
         server.boostrap();

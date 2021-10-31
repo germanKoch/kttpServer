@@ -25,4 +25,17 @@ public class Handler1 {
         return new HttpResponse(headers, "Hello-post-lala", HttpStatusCode.OK);
     }
 
+    @RequestHandler(method = HttpMethod.GET, url = "/lala/pro")
+    public HttpResponse handleGetTwo(HttpRequest request) {
+        var headers = new HttpHeaders();
+        headers.addHeader("Content-Type", "text/html");
+        return new HttpResponse(headers, "Hello-post-lala pro", HttpStatusCode.OK);
+    }
+
+    @RequestHandler(method = HttpMethod.GET, url = "/lala/pro/*")
+    public HttpResponse handleGetTwoPat(HttpRequest request) {
+        var headers = new HttpHeaders();
+        headers.addHeader("Content-Type", "text/html");
+        return new HttpResponse(headers, "Hello-post-lala with pattern", HttpStatusCode.OK);
+    }
 }

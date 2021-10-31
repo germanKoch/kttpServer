@@ -4,6 +4,7 @@ import org.kttp.listener.model.mapping.RequestMappingInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class HttpHandlerHolder implements HandlerHolder {
 
@@ -18,4 +19,10 @@ public class HttpHandlerHolder implements HandlerHolder {
     public Handler get(RequestMappingInfo info) {
         return handlers.get(info);
     }
+
+    @Override
+    public Set<RequestMappingInfo> getInfoSet() {
+        return handlers.keySet();
+    }
+
 }
