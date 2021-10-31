@@ -3,22 +3,21 @@ package org.kttp.listener;
 import org.kttp.listener.model.HttpRequest;
 import org.kttp.listener.model.HttpResponse;
 import org.kttp.listener.model.HttpStatusCode;
-import org.kttp.listener.model.mapping.RequestMappingInfo;
+import org.kttp.listener.resolver.UrlMappingResolver;
 
 public class HttpHandlerDispatcher implements HandlerDispatcher {
-    HandlerHolder holder;
+    UrlMappingResolver resolver;
 
-    public HttpHandlerDispatcher(HandlerHolder holder) {
-        this.holder = holder;
+    public HttpHandlerDispatcher(UrlMappingResolver resolver) {
+        this.resolver = resolver;
     }
 
     @Override
     public HttpResponse handleRequest(HttpRequest request) {
-        var requestInfo = new RequestMappingInfo(
+        var handler = resolver.resolve(
                 request.getMetadata().getMethod(),
                 request.getMetadata().getUrl()
         );
-        var handler = holder.get(requestInfo);
 
         if (handler == null) {
             return new HttpResponse("NOT FOUND", HttpStatusCode.NOT_FOUND);

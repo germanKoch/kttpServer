@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class HttpHandlerHolder implements HandlerHolder {
 
-    private Map<RequestMappingInfo, Handler> handlers = new HashMap<>();
+    private final Map<RequestMappingInfo, Handler> handlers = new HashMap<>();
 
     @Override
     public void add(RequestMappingInfo info, Handler handler) {
