@@ -9,19 +9,19 @@ public class HttpResponse {
     private HttpStatusCode status;
 
     public HttpResponse(HttpStatusCode status) {
-        this(new HttpHeaders(), status);
+        this(status, new HttpHeaders());
     }
 
-    public HttpResponse(Object body, HttpStatusCode status) {
-        this(new HttpHeaders(), body, status);
+    public HttpResponse(HttpStatusCode status, Object body) {
+        this(status, body, new HttpHeaders());
     }
 
-    public HttpResponse(HttpHeaders headers, HttpStatusCode status) {
+    public HttpResponse(HttpStatusCode status, HttpHeaders headers) {
         this.headers = headers;
         this.status = status;
     }
 
-    public HttpResponse(HttpHeaders headers, Object body, HttpStatusCode status) {
+    public HttpResponse(HttpStatusCode status, Object body, HttpHeaders headers) {
         this.headers = headers;
         this.body = body;
         this.status = status;

@@ -10,29 +10,32 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class AbstractHandlerInitializer implements HandlerInitializer {
 
     @Override
-    public HandlerHolder init(String basePackage, HandlerHolder holder) {
-        var reflections = new Reflections(basePackage);
-        var classes = reflections.getTypesAnnotatedWith(getAnnotationTrigger());
-        classes.forEach(aClass -> {
-            try {
-                var controller = aClass.getDeclaredConstructor().newInstance();
-                var handlers = Arrays.stream(aClass.getMethods())
-                        .filter(method -> method.isAnnotationPresent(RequestHandler.class))
-                        .collect(Collectors.toList());
-                handlers.forEach(handler -> {
-                    var annotation = handler.getAnnotation(RequestHandler.class);
-                    var urlMethod = annotation.method();
-                    var url = annotation.url();
-                    holder.add(new RequestMappingInfo(urlMethod, url), getHandler(handler, controller));
-                });
-            } catch (Exception e) {
-                throw new HandlersIntializationException("Error while handler initialization", e);
-            }
+    public HandlerHolder init(List<String> packages, HandlerHolder holder) {
+        packages.forEach(packageName -> {
+            var reflections = new Reflections(packageName);
+            var classes = reflections.getTypesAnnotatedWith(getAnnotationTrigger());
+            classes.forEach(aClass -> {
+                try {
+                    var controller = aClass.getDeclaredConstructor().newInstance();
+                    var handlers = Arrays.stream(aClass.getMethods())
+                            .filter(method -> method.isAnnotationPresent(RequestHandler.class))
+                            .collect(Collectors.toList());
+                    handlers.forEach(handler -> {
+                        var annotation = handler.getAnnotation(RequestHandler.class);
+                        var urlMethod = annotation.method();
+                        var url = annotation.url();
+                        holder.add(new RequestMappingInfo(urlMethod, url), getHandler(handler, controller));
+                    });
+                } catch (Exception e) {
+                    throw new HandlersIntializationException("Error while handler initialization", e);
+                }
+            });
         });
         return holder;
     }

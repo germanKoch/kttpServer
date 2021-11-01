@@ -20,7 +20,7 @@ public class HttpHandlerDispatcher implements HandlerDispatcher {
         );
 
         if (handler == null) {
-            return new HttpResponse("NOT FOUND", HttpStatusCode.NOT_FOUND);
+            return new HttpResponse(HttpStatusCode.NOT_FOUND, "NOT FOUND");
         }
         return handler.handle(request);
     }

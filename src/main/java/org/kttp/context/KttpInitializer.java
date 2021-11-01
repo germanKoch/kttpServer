@@ -23,7 +23,8 @@ public class KttpInitializer {
 
     public void start() {
         var holder = new HttpHandlerHolder();
-        handlerInitializers.forEach(handlerInitializer -> handlerInitializer.init(basePackage, holder));
+        var scanningPackages = List.of(basePackage, "org.kttp");
+        handlerInitializers.forEach(handlerInitializer -> handlerInitializer.init(scanningPackages, holder));
 
         var resolver = new HttpUrlMappingResolver(holder);
         var dispatcher = new HttpHandlerDispatcher(resolver);

@@ -17,7 +17,6 @@ public class RestHandlerInitializer extends AbstractHandlerInitializer {
 
     @Override
     protected Handler getHandler(Method annotatedMethod, Object annotatedObject) {
-        //TODO: переделать без рефлексии
         return request -> {
             try {
                 return (HttpResponse) annotatedMethod.invoke(annotatedObject, request);
