@@ -1,9 +1,9 @@
 package org.kttp.listener;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.kttp.listener.parser.RequestParser;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RequiredArgsConstructor
 public class KttpListener {
 
@@ -29,9 +30,10 @@ public class KttpListener {
             var group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(5));
             var serverChannel = AsynchronousServerSocketChannel.open(group);
             serverChannel.bind(new InetSocketAddress(8080));
-            serverChannel.accept(null, new CompletionHandler<>() {
+            serverChannel.accept("Client Request", new CompletionHandler<>() {
                 @Override
-                public void completed(AsynchronousSocketChannel channel, Object attachment) {
+                public void completed(AsynchronousSocketChannel channel, String attachment) {
+                    log.debug(attachment);
                     serverChannel.accept(null, this);
                     try (channel) {
                         var request = readRequest(channel);
@@ -41,23 +43,20 @@ public class KttpListener {
                             var responseStr = parser.parseResponse(response);
                             channel.write(ByteBuffer.wrap(responseStr.getBytes(StandardCharsets.UTF_8)));
                         }
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        log.error("Error while handling request", e);
                     }
                 }
 
                 @Override
-                public void failed(Throwable exc, Object attachment) {
-                    exc.printStackTrace();
+                public void failed(Throwable e, String attachment) {
+                    log.error("Error while handling request", e);
                 }
             });
+            log.info("Kttp-server started");
             group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Server Error", e);
         }
     }
 

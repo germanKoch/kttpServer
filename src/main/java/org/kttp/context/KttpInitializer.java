@@ -1,11 +1,14 @@
 package org.kttp.context;
 
+import com.github.lalyos.jfiglet.FigletFont;
+import org.kttp.context.util.BannerPrinter;
 import org.kttp.listener.HttpHandlerDispatcher;
 import org.kttp.listener.HttpHandlerHolder;
 import org.kttp.listener.KttpListener;
 import org.kttp.listener.parser.HttpRequestParser;
 import org.kttp.listener.resolver.HttpUrlMappingResolver;
 
+import java.io.IOException;
 import java.util.List;
 
 public class KttpInitializer {
@@ -22,6 +25,7 @@ public class KttpInitializer {
     }
 
     public void start() {
+        BannerPrinter.printBanner();
         var holder = new HttpHandlerHolder();
         var scanningPackages = List.of(basePackage, "org.kttp");
         handlerInitializers.forEach(handlerInitializer -> handlerInitializer.init(scanningPackages, holder));
