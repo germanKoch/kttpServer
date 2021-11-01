@@ -13,8 +13,11 @@ import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,14 +30,18 @@ public class KttpListener {
 
     public void boostrap() {
         try {
-            var group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(5));
+            var threadPool = new ThreadPoolExecutor(
+                    5, 20, 0L,
+                    TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
+                    defaultThreadFactory());
+            var group = AsynchronousChannelGroup.withThreadPool(threadPool);
             var serverChannel = AsynchronousServerSocketChannel.open(group);
             serverChannel.bind(new InetSocketAddress(8080));
             serverChannel.accept("Client Request", new CompletionHandler<>() {
                 @Override
                 public void completed(AsynchronousSocketChannel channel, String attachment) {
+                    serverChannel.accept(attachment, this);
                     log.debug(attachment);
-                    serverChannel.accept(null, this);
                     try (channel) {
                         var request = readRequest(channel);
                         if (request != null && !request.isBlank()) {
@@ -80,6 +87,17 @@ public class KttpListener {
             return builder.toString();
         }
         return null;
+    }
+
+    private ThreadFactory defaultThreadFactory() {
+        return new ThreadFactory() {
+            final AtomicInteger integer = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable task) {
+                return new Thread(task, "kttp-thread-" + integer.getAndIncrement());
+            }
+        };
     }
 
 
