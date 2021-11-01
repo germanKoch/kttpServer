@@ -6,12 +6,15 @@ import org.kttp.listener.parser.RequestParser;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class KttpListener {
@@ -23,38 +26,45 @@ public class KttpListener {
 
     public void boostrap() {
         try {
-            var serverChannel = AsynchronousServerSocketChannel.open();
+            var group = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(5));
+            var serverChannel = AsynchronousServerSocketChannel.open(group);
             serverChannel.bind(new InetSocketAddress(8080));
-            while (true) {
-                var futureChannel = serverChannel.accept();
-                handleRequest(futureChannel);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+            serverChannel.accept(null, new CompletionHandler<>() {
+                @Override
+                public void completed(AsynchronousSocketChannel channel, Object attachment) {
+                    serverChannel.accept(null, this);
+                    try (channel) {
+                        var request = readRequest(channel);
+                        if (request != null && !request.isBlank()) {
+                            var httpRequest = parser.parseRequest(request);
+                            var response = dispatcher.handleRequest(httpRequest);
+                            var responseStr = parser.parseResponse(response);
+                            channel.write(ByteBuffer.wrap(responseStr.getBytes(StandardCharsets.UTF_8)));
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    exc.printStackTrace();
+                }
+            });
+            group.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleRequest(Future<AsynchronousSocketChannel> futureChannel)
-            throws InterruptedException, ExecutionException, IOException {
-        var buffer = ByteBuffer.allocate(BUFFER_SIZE);
-        try (var channel = futureChannel.get()) {
-            var request = readRequest(channel, buffer);
-            if (request != null && !request.isBlank()) {
-                var httpRequest = parser.parseRequest(request);
-                var response = dispatcher.handleRequest(httpRequest);
-                var responseStr = parser.parseResponse(response);
-                channel.write(ByteBuffer.wrap(responseStr.getBytes(StandardCharsets.UTF_8)));
-            }
-        }
-    }
-
-    private String readRequest(AsynchronousSocketChannel channel, ByteBuffer buffer) throws ExecutionException, InterruptedException {
+    private String readRequest(AsynchronousSocketChannel channel) throws ExecutionException, InterruptedException {
         var endReading = false;
         var builder = new StringBuilder();
+        var buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
         while (channel.isOpen() && !endReading) {
             channel.read(buffer).get();
