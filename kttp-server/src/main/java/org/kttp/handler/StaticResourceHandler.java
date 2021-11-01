@@ -2,7 +2,6 @@ package org.kttp.handler;
 
 import org.kttp.context.model.annotations.Controller;
 import org.kttp.context.model.annotations.RequestHandler;
-import org.kttp.context.model.annotations.ResourceController;
 import org.kttp.context.util.ResourceLoader;
 import org.kttp.listener.model.HttpHeaders;
 import org.kttp.listener.model.HttpMethod;
